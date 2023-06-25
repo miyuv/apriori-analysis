@@ -1,0 +1,29 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+df = pd.read_excel('deneme.xlsx')
+df_encoded = pd.get_dummies(df, columns=['tur'], prefix='', prefix_sep='')
+df_encoded = df_encoded.groupby('musteri_no').sum()
+
+df_encoded = df_encoded.astype(bool)
+print(df_encoded)
+
+from mlxtend.frequent_patterns import apriori
+from mlxtend.frequent_patterns import association_rules
+
+frequent_itemsets =  apriori(df_encoded, min_support=0.002, use_colnames=True)
+rules = association_rules(frequent_itemsets, metric='confidence', min_threshold=0.08)
+rules [ (rules['lift'] >=2 ) ]
+rules
+
+# Transform the DataFrame of rules into a matrix using the lift metric
+pivot = rules.pivot(index = 'consequents', 
+                    columns = 'antecedents', values= 'confidence')
+
+# Generate a heatmap with annotations on and the colorbar off
+plt.figure(figsize=(14,9))
+sns.heatmap(pivot, annot = True, cbar = False)
+plt.yticks(rotation=0)
+plt.xticks(rotation=90)
+plt.show()
